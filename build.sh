@@ -8,6 +8,9 @@ set -o errexit
 pip install pipenv
 pipenv install --system --deploy
 
+# FORCE INSTALL GUNICORN JUST IN CASE
+pip install gunicorn whitenoise dj-database-url
+
 # 2. Collect Static Files
 # This gathers all CSS/JS into the 'staticfiles' folder for WhiteNoise to serve.
 python manage.py collectstatic --no-input
