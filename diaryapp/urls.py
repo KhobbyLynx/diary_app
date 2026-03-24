@@ -23,7 +23,7 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('', include('diary.urls')),
     # Temporary URL to fix the database issue on Render. Remove after use.
-    path('fix-my-db/', fix_db),
+    path('fix-db/', fix_db),
 ]
 
 # Error handlers
