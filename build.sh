@@ -2,24 +2,15 @@
 # Exit on error
 set -o errexit
 
-# 1. Install dependencies using Pipenv
-# We use --system so the packages are installed in the container's global python
-# which is the standard way Render handles Python environments.
-pip install pipenv
-pipenv install --system --deploy
-
-# Alternatively, if you prefer using requirements.txt, you can generate it with:
-# pipenv lock -r > requirements.txt
-# And then install with:
+# 1. Install dependencies
+# If you have a requirements.txt, this is the most reliable way on Render.
+pip install --upgrade pip
 pip install -r requirements.txt
 
-# FORCE INSTALL GUNICORN JUST IN CASE
-pip install gunicorn whitenoise dj-database-url
-
 # 2. Collect Static Files
-# This gathers all CSS/JS into the 'staticfiles' folder for WhiteNoise to serve.
+# Gathers CSS/JS for WhiteNoise.
 python manage.py collectstatic --no-input
 
 # 3. Apply Database Migrations
-# This ensures your Render PostgreSQL database matches your local models.
+# This creates the 'django_site' table that is currently missing.
 python manage.py migrate
