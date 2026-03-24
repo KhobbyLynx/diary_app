@@ -118,7 +118,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'diaryapp.wsgi.application'
 
 
-# --- DATABASE CONFIGURATION ---
+# --- DATABASE CONFIG ---
 # Switches between PostgreSQL (Render) and SQLite (Local)
 DATABASES = {
     'default': dj_database_url.config(
