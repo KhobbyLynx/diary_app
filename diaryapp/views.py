@@ -1,15 +1,17 @@
 import os
+from django.contrib.auth.models import User
 from allauth.socialaccount.models import SocialApp
 from django.contrib.sites.models import Site
 from django.http import HttpResponse
-
-import os
-from django.http import HttpResponse
-from django.contrib.sites.models import Site
-from allauth.socialaccount.models import SocialApp
 
 
 def fix_db(request):
+
+    # Inside your fix_db function:
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser(
+            'admin', 'admin@lynxnet.com', 'Testing@123')
+
     try:
         # 1. Get the keys you already set in Render Env
         client_id = os.environ.get('GOOGLE_CLIENT_ID')
