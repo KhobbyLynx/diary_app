@@ -8,6 +8,11 @@ set -o errexit
 pip install pipenv
 pipenv install --system --deploy
 
+# Alternatively, if you prefer using requirements.txt, you can generate it with:
+# pipenv lock -r > requirements.txt
+# And then install with:
+pip install -r requirements.txt
+
 # FORCE INSTALL GUNICORN JUST IN CASE
 pip install gunicorn whitenoise dj-database-url
 

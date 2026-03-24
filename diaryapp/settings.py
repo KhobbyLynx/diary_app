@@ -28,8 +28,9 @@ SECRET_KEY = os.getenv(
 # DEBUG is True locally, False in production
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-# Allow all hosts for Render/Testing; narrow this down for a real production app
-ALLOWED_HOSTS = ['*']
+# Allow hosts for Render/Testing;
+ALLOWED_HOSTS = [os.environ.get(
+    'RENDER_EXTERNAL_HOSTNAME'), 'localhost', '127.0.0.1']
 
 # Groq API key for LLaMA 3.3 integration
 GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
