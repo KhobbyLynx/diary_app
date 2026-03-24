@@ -1,0 +1,33 @@
+# Environments
+.env
+
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Database
+db.sqlite3
+*.sqlite3
+
+# Django
+*.log
+local_settings.py
+
+# Temp IDE and AI Tool Files
+.vscode/
+.idea/
+.gemini/
+*.tmp
+*.bak

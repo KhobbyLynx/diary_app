@@ -1,0 +1,328 @@
+{% extends 'base.html' %}
+{% block title %}{% if entry %}Edit{% else %}New{% endif %} Entry - Diary App{% endblock %}
+{% block extra_css %}
+<style>
+    .shimmer {
+        background: linear-gradient(
+            90deg,
+            #f0f0f0 25%,
+            #e0e0e0 50%,
+            #f0f0f0 75%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    /* Auto-grow textarea */
+    #id_content {
+        min-height: 280px;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <!-- Back button -->
+    <div class="flex items-center justify-between">
+        <a
+            href="{% url 'dashboard' %}"
+            class="text-indigo hover:text-indigo/80 font-medium flex items-center gap-2 transition-colors"
+        >
+            <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 19l-7-7 7-7"
+                ></path>
+            </svg>
+            Back
+        </a>
+    </div>
+
+    <!-- Form card -->
+    <div
+        class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-charcoal/10"
+    >
+        <h1 class="text-2xl md:text-3xl font-serif text-charcoal mb-6">
+            {% if entry %}Edit Entry{% else %}New Entry{% endif %}
+        </h1>
+
+        <form method="post" id="entry-form" class="space-y-5">
+            {% csrf_token %}
+
+            <!-- Title field -->
+            <div>
+                <label
+                    for="id_title"
+                    class="block text-sm font-medium text-charcoal/70 mb-2"
+                    >Title</label
+                >
+                <input
+                    type="text"
+                    name="title"
+                    id="id_title"
+                    value="{{ entry.title|default:'' }}"
+                    class="w-full px-4 py-3 bg-offwhite border border-charcoal/15 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo/20 focus:border-indigo transition-all duration-300 text-charcoal placeholder:text-charcoal/30"
+                    placeholder="Give your entry a title..."
+                    required
+                />
+            </div>
+
+            <!-- Content field -->
+            <div>
+                <label
+                    for="id_content"
+                    class="block text-sm font-medium text-charcoal/70 mb-2"
+                    >Content</label
+                >
+                <textarea
+                    name="content"
+                    id="id_content"
+                    rows="10"
+                    class="w-full px-4 py-3 bg-offwhite border border-charcoal/15 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo/20 focus:border-indigo resize-none transition-all duration-300 text-charcoal placeholder:text-charcoal/30 leading-relaxed"
+                    placeholder="Write your thoughts here..."
+                    required
+                >
+{{ entry.content|default:'' }}</textarea
+                >
+            </div>
+
+            <!-- Hidden AI fields -->
+            <input
+                type="hidden"
+                name="summary"
+                id="id_summary"
+                value="{{ entry.summary|default:'' }}"
+            />
+            <input
+                type="hidden"
+                name="emotion"
+                id="id_emotion"
+                value="{{ entry.emotion|default:'' }}"
+            />
+
+            <!-- AI Analysis Result (shown after analysis) -->
+            <div id="analysis-result" class="hidden">
+                <div
+                    class="bg-gradient-to-br from-indigo/5 to-purple-500/5 rounded-xl p-5 border border-indigo/10"
+                >
+                    <div class="flex items-center gap-2 mb-3">
+                        <svg
+                            class="w-5 h-5 text-indigo"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                            ></path>
+                        </svg>
+                        <h3
+                            class="text-sm font-semibold text-charcoal uppercase tracking-wide"
+                        >
+                            AI Analysis
+                        </h3>
+                    </div>
+                    <div id="summary-display" class="mb-3"></div>
+                    <div id="emotion-display"></div>
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <button
+                    type="button"
+                    id="analyze-btn"
+                    onclick="analyzeEntry()"
+                    {% if not entry.content %}disabled{% endif %}
+                    class="flex items-center justify-center gap-2 px-5 py-3 border-2 border-indigo/20 text-indigo rounded-xl font-medium hover:bg-indigo/5 hover:border-indigo/40 transition-all duration-300 min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                >
+                    <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                        ></path>
+                    </svg>
+                    <span id="analyze-text">Analyze with AI</span>
+                    <svg
+                        id="analyze-loading"
+                        class="hidden animate-spin w-5 h-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            class="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            stroke-width="4"
+                        ></circle>
+                        <path
+                            class="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                    </svg>
+                </button>
+                <button
+                    type="submit"
+                    id="save-btn"
+                    class="flex-1 flex items-center justify-center gap-2 bg-indigo text-white px-6 py-3 rounded-xl font-medium hover:bg-indigo/90 transition-all duration-300 min-h-[44px] shadow-lg shadow-indigo/20"
+                >
+                    <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 13l4 4L19 7"
+                        ></path>
+                    </svg>
+                    <span id="save-text">Save Entry</span>
+                    <svg
+                        id="save-loading"
+                        class="hidden animate-spin w-5 h-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            class="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            stroke-width="4"
+                        ></circle>
+                        <path
+                            class="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                    </svg>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    async function analyzeEntry() {
+        const content = document.getElementById("id_content").value;
+        if (!content.trim()) {
+            alert("Please write some content first");
+            return;
+        }
+
+        const analyzeText = document.getElementById("analyze-text");
+        const analyzeLoading = document.getElementById("analyze-loading");
+        const analyzeBtn = document.getElementById("analyze-btn");
+
+        analyzeText.classList.add("hidden");
+        analyzeLoading.classList.remove("hidden");
+        analyzeBtn.disabled = true;
+        analyzeBtn.classList.add("opacity-60");
+
+        // Show shimmer loading state
+        const summaryDisplay = document.getElementById("summary-display");
+        summaryDisplay.innerHTML =
+            '<div class="shimmer h-4 rounded mb-2"></div><div class="shimmer h-4 rounded w-3/4"></div>';
+        document.getElementById("analysis-result").classList.remove("hidden");
+
+        try {
+            const response = await fetch("/api/analyze/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": document.querySelector(
+                        "[name=csrfmiddlewaretoken]",
+                    ).value,
+                },
+                body: JSON.stringify({ content: content }),
+            });
+
+            const data = await response.json();
+
+            summaryDisplay.innerHTML = `<p class="text-charcoal/70 text-sm leading-relaxed">${data.summary}</p>`;
+
+            const emotionColors = {
+                Happy: "bg-yellow-100 text-yellow-800",
+                Calm: "bg-blue-100 text-blue-800",
+                Reflective: "bg-purple-100 text-purple-800",
+                Anxious: "bg-orange-100 text-orange-800",
+                Sad: "bg-gray-100 text-gray-700",
+                Excited: "bg-green-100 text-green-800",
+            };
+            const colorClass =
+                emotionColors[data.emotion] || "bg-gray-100 text-gray-800";
+
+            document.getElementById("emotion-display").innerHTML = `
+			<div class="flex items-center gap-2">
+				<span class="text-xs font-medium text-charcoal/50 uppercase tracking-wide">Detected Emotion</span>
+				<span class="px-3 py-1 text-xs font-medium rounded-full ${colorClass}">${data.emotion}</span>
+			</div>
+		`;
+
+            // Save to hidden fields for form submission
+            document.getElementById("id_summary").value = data.summary;
+            document.getElementById("id_emotion").value = data.emotion;
+        } catch (error) {
+            console.error("Error:", error);
+            summaryDisplay.innerHTML =
+                '<p class="text-red-600 text-sm">Error analyzing entry. Please try again.</p>';
+        } finally {
+            analyzeText.classList.remove("hidden");
+            analyzeLoading.classList.add("hidden");
+            analyzeBtn.disabled = false;
+            analyzeBtn.classList.remove("opacity-60");
+        }
+    }
+
+    document.getElementById("entry-form").addEventListener("submit", function (e) {
+        var saveText = document.getElementById("save-text");
+        var saveLoading = document.getElementById("save-loading");
+        saveText.classList.add("hidden");
+        saveLoading.classList.remove("hidden");
+    });
+
+    // Toggle Analyze button based on content
+    var contentField = document.getElementById("id_content");
+    var analyzeBtn = document.getElementById("analyze-btn");
+    contentField.addEventListener("input", function () {
+        if (contentField.value.trim().length > 0) {
+            analyzeBtn.disabled = false;
+        } else {
+            analyzeBtn.disabled = true;
+        }
+    });
+</script>
+{% endblock %}

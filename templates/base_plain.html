@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="Diary App - Your private space to capture thoughts, memories, and daily moments."
+        />
+        <title>{% block title %}Diary App{% endblock %}</title>
+
+        <!-- Tailwind CDN with custom config -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            serif: ["Playfair Display", "Lora", "serif"],
+                            sans: [
+                                "Inter",
+                                "Roboto",
+                                "system-ui",
+                                "sans-serif",
+                            ],
+                        },
+                        colors: {
+                            offwhite: "#FAFAFA",
+                            charcoal: "#262626",
+                            sage: "#9CAF88",
+                            indigo: "#6366F1",
+                        },
+                        borderRadius: {
+                            "2xl": "1rem",
+                        },
+                        spacing: {
+                            44: "2.75rem",
+                        },
+                        minHeight: {
+                            button: "2.75rem",
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <link
+            href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap"
+            rel="stylesheet"
+        />
+
+        <style>
+            body {
+                font-family: "Inter", "Roboto", system-ui, sans-serif;
+                color: #262626;
+                overflow-x: hidden;
+            }
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6 {
+                font-family: "Playfair Display", "Lora", serif;
+                color: #262626;
+            }
+
+            /* Smooth page transitions */
+            main {
+                animation: fadeIn 0.4s ease;
+            }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            @keyframes float {
+                0%,
+                100% {
+                    transform: translateY(0px);
+                }
+                50% {
+                    transform: translateY(-6px);
+                }
+            }
+            .animate-float {
+                animation: float 3s ease-in-out infinite;
+            }
+        </style>
+
+        {% block extra_css %}{% endblock %}
+    </head>
+    <body class="bg-offwhite min-h-screen flex flex-col items-center justify-center px-4 relative">
+        <!-- Toast Messages Container -->
+        {% if messages %}
+        <div class="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4 space-y-3 pointer-events-none">
+            {% for message in messages %}
+                {% if request.path == '/accounts/logout/' and "Successfully signed in" in message.message %}
+                    <!-- skip login toast on logout page -->
+                {% else %}
+                <div
+                    class="pointer-events-auto bg-charcoal text-white px-5 py-3 rounded-xl text-sm font-medium shadow-xl flex items-center justify-between gap-4 message-toast opacity-0 translate-y-[-10px] transition-all duration-300"
+                    style="{% if 'error' in message.tags %}background-color: #ef4444;{% endif %}"
+                >
+                <div>{{ message }}</div>
+                <button onclick="this.parentElement.remove()" class="text-white/60 hover:text-white transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <main class="w-full max-w-sm mt-8 mb-8 z-10 relative">{% block content %}{% endblock %}</main>
+
+        {% block extra_js %}
+        <script>
+            // Auto fade-out messages
+            document.addEventListener('DOMContentLoaded', () => {
+                const toasts = document.querySelectorAll('.message-toast');
+                toasts.forEach((toast, index) => {
+                    // Stagger entrance
+                    setTimeout(() => {
+                        toast.classList.remove('opacity-0', 'translate-y-[-10px]');
+                        toast.classList.add('opacity-100', 'translate-y-0');
+                    }, index * 100 + 10);
+                    
+                    // Auto hide after 4s
+                    setTimeout(() => {
+                        toast.classList.remove('opacity-100', 'translate-y-0');
+                        toast.classList.add('opacity-0', 'translate-y-[-10px]');
+                        setTimeout(() => toast.remove(), 300);
+                    }, 4000);
+                });
+            });
+        </script>
+        {% endblock %}
+    </body>
+</html>

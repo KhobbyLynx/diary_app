@@ -1,0 +1,47 @@
+{% extends 'base_plain.html' %}
+{% block title %}Sign Out - Diary App{% endblock %}
+{% block content %}
+<div class="text-center">
+    <div
+        class="w-16 h-16 mx-auto mb-6 bg-charcoal/5 rounded-2xl flex items-center justify-center"
+    >
+        <svg
+            class="w-8 h-8 text-charcoal/40"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            ></path>
+        </svg>
+    </div>
+    <h1 class="text-2xl font-serif text-charcoal mb-2">Sign out</h1>
+    <p class="text-sm text-charcoal/50 mb-8">
+        Are you sure you want to sign out?
+    </p>
+
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-charcoal/10">
+        <form method="post" action="{% url 'account_logout' %}">
+            {% csrf_token %}
+            <div class="flex gap-3">
+                <a
+                    href="{% url 'dashboard' %}"
+                    class="flex-1 px-6 py-3 rounded-xl font-medium text-charcoal/70 border border-charcoal/15 hover:bg-charcoal/5 transition-all duration-300 min-h-[44px] flex items-center justify-center"
+                >
+                    Cancel
+                </a>
+                <button
+                    type="submit"
+                    class="flex-1 bg-red-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-red-700 transition-all duration-300 min-h-[44px]"
+                >
+                    Sign Out
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
