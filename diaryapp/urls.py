@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path('', include('diary.urls')),
+    # Temporary URL to fix the database issue on Render. Remove after use.
     path('fix-my-db/', fix_db),
 ]
 
