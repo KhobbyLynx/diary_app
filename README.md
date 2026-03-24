@@ -19,6 +19,7 @@ Create a `.env` file in the root directory and add the following keys.
 ```env
 DEBUG=
 SECRET_KEY=
+DATABASE_URL=
 GROQ_API_KEY=
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
